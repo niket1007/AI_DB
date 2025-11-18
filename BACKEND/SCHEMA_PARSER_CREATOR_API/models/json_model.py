@@ -71,7 +71,7 @@ class JSONModel(BaseModel):
         Field(description="Tables information")]
     relationships: Annotated[
         Optional[List[RelationshipModel]],
-        Field(default=None, description="Foreign Keys Information")]
+        Field(default=[], description="Foreign Keys Information")]
     indexes: Annotated[
         Optional[List[IndexModel]],
-        Field(default=None, description="Indexes Information")]
+        Field(default=[], description="Indexes Information")]
