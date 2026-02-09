@@ -17,6 +17,7 @@ Schema Parser and Creator API helps you to create table/indexes/realtionship fro
 ## /create-schema
 * Parse and Validate the json structure
 * Create db entites
+* Store the json structure in client db
 """
 
 app = FastAPI(title="Schema Parser and Creator API",

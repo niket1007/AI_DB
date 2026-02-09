@@ -27,7 +27,6 @@ def json_table_validator(tables: list[TableModel]) -> list[str]:
         autoincrement_count = 0
         table_column_names = set()
         for column in table.columns:
-
             if column.name in table_column_names:
                 errors.append(f"Table '{table.name}': Duplicate column name '{column.name}'.")
             table_column_names.add(column.name)

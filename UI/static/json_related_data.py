@@ -1,69 +1,79 @@
-EXAMPLE_JSON_SCHEMA = """
-{
+EXAMPLE_JSON_SCHEMA = """{
   "tables": [
     {
       "name": "users",
+      "description": "Table contain user information",
       "columns": [
         {
           "name": "id",
           "type": "INTEGER",
           "primary_key": true,
           "autoincrement": true,
-          "nullable": false
+          "nullable": false,
+          "description": "User id" 
         },
         {
           "name": "username",
           "type": "VARCHAR",
           "size": 50,
           "unique": true,
-          "nullable": false
+          "nullable": false,
+          "description": "Username"
         },
         {
           "name": "email",
           "type": "VARCHAR",
           "size": 100,
           "unique": true,
-          "nullable": true
+          "nullable": true,
+          "description": "User email address"
         },
         {
           "name": "created_at",
           "type": "DATETIME",
           "nullable": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "CURRENT_TIMESTAMP",
+          "description": "User record created timestamp"
         },
         {
           "name": "is_active",
           "type": "BOOLEAN",
           "nullable": false,
-          "default": "true"
+          "default": "true",
+          "description": "Is user active?"
         }
       ]
     },
     {
       "name": "posts",
+      "description": "Table contain post data",
       "columns": [
         {
           "name": "id",
           "type": "INTEGER",
           "primary_key": true,
           "autoincrement": true,
-          "nullable": false
+          "nullable": false,
+          "description": "Post id"
         },
         {
           "name": "title",
           "type": "VARCHAR",
           "size": 200,
-          "nullable": false
+          "nullable": false,
+          "description": "Post title"
         },
         {
           "name": "content",
           "type": "VARCHAR",
-          "size": 10000
+          "size": 10000,
+          "description": "Post content"
         },
         {
           "name": "author_id",
           "type": "INTEGER",
-          "nullable": true
+          "nullable": true,
+          "description": "User id who has written the post"
         }
       ]
     }
@@ -84,8 +94,7 @@ EXAMPLE_JSON_SCHEMA = """
       "columns": ["title"]
     }
   ]
-}
-"""
+}"""
 
 VALIDATION_CHECKS_MARKDOWN = """
 The backend runs a complete validation of your schema *before*
@@ -116,4 +125,8 @@ attempting to create it.
 - The `columns` list for an index cannot be empty.
 - All columns listed in an index must exist on that table.
 - Duplicate columns are not allowed within a single index.
+
+**Description and Example Checks:**
+- Table and column description is required for chat feature.
+- Example are optional but if provided it increases query generation accuracy.
 """

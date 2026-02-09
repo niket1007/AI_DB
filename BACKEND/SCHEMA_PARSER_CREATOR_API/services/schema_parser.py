@@ -36,7 +36,6 @@ def _get_column_args(col_data: BaseTableColumnModel) -> dict:
         elif col_data.type == "BOOLEAN":
             col_kwargs["server_default"] = "1" if default_val.lower() == "true" else "0"           
         else:
-
             col_kwargs["server_default"] = default_val
             
     return col_kwargs
@@ -123,7 +122,6 @@ async def parse_and_create_schema(data: RequestPayloadModel) -> list[str]:
         result_log.append("Log: Applying schema to database...")
         error = await asyncio.to_thread(_create_schema_sync)
         if error:
-            print(error)
             raise error
         result_log.append("SUCCESS: Database schema created and transaction committed successfully.")
     

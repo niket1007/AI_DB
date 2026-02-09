@@ -1,17 +1,26 @@
 import streamlit as st
+from services.services import get_connection_strings
 
 def show_chat_ui_page():
     if st.session_state.get("logged_in", False):
         st.title("Text to SQL (Module 2)")
 
-        mock_connections = st.session_state.get("connections", {})
-        if not mock_connections:
-            st.warning("You have no saved connection strings. Please create a schema first.")
-            return
+        connections = st.session_state.get("connections", None)
+        if connections is None:
+            print("Inside if")
+            connections = get_connection_strings()
+            if connections is None:
+                st.warning("No connections saved.")
+                return
 
-        conn_map = mock_connections
-        selected_name = st.selectbox("Select a database to chat with:", conn_map.keys())
-        selected_conn_string = conn_map[selected_name]
+        conn_map = connections
+        selected_name = st.selectbox(
+            "Select a database to chat with:", 
+            [conn[1] for conn in conn_map])
+        
+        for conn in conn_map:
+            if conn[1] == selected_name:
+                selected_conn_string = conn[2]
         
         st.text(f"Connected to: {selected_conn_string[:20]}...")
 
