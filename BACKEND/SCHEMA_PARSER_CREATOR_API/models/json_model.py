@@ -8,7 +8,7 @@ class BaseTableColumnModel(BaseModel):
         str,
         Field(description="Column Name")]
     type: Annotated[
-        SUPPORTED_DATATYPE, # type: ignore
+        SUPPORTED_DATATYPE,
         Field(description="Column Datatype")]
     size: Annotated[
         Optional[int],

@@ -1,17 +1,6 @@
 from models.create_schema_models import RequestPayloadModel
 from models.json_model import TableModel, RelationshipModel, IndexModel
-from typing import Optional
 from Exceptions.custom_exception import CustomException
-
-def request_payload_validator_and_converter(body: dict) -> Optional[RequestPayloadModel]:
-    try:
-        data = RequestPayloadModel.model_validate(body)
-        return data
-    except Exception as e:
-        raise CustomException(
-            type="VALIDATION_FAILURE", 
-            message={"error": "Invalid request payload"})
-    
 
 def json_table_validator(tables: list[TableModel]) -> list[str]:
     errors = []
@@ -143,8 +132,7 @@ def json_index_validator(indexes: list[IndexModel], transformedTable: dict) -> l
                 errors.append(f"Index '{index.name}': Invalid column name '{column}'.")
     return errors
 
-def main_validation_func(req_body: dict):
-    data = request_payload_validator_and_converter(req_body)
+def main_validation_func(data: RequestPayloadModel):
 
     # Table and Column Check
     validation_error = json_table_validator(data.er_diagram_json.tables)
