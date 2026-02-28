@@ -33,8 +33,8 @@ class BaseTableColumnModel(BaseModel):
         Field(description="Describe use of column")
     ]
     examples: Annotated[
-        list,
-        Field(description="Column data example")
+        Optional[list],
+        Field(default=None, description="Column data example")
     ]
 
 class TableModel(BaseModel):

@@ -7,8 +7,8 @@ class CustomException(Exception):
         self.message = message
 
 def custom_exception_handler(request: Request, exec: CustomException):
+    status_code = 500
     if exec.type == "VALIDATION_FAILURE":
-        return JSONResponse(status_code=400,
-                            content=exec.message)
-    else:
-        return JSONResponse(status_code=500, content=str(exec))
+        status_code=400
+    print("API Error Response", exec.message)
+    return JSONResponse(status_code=status_code, content=exec.message)

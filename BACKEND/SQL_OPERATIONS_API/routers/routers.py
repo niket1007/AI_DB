@@ -1,13 +1,23 @@
-from fastapi import APIRouter, Request
-from models.create_schema_models import RequestPayloadModel
+from fastapi import APIRouter, Query
 from services.query_executors import run_sql_queries
-from models import execute_sql_models
-
+from models import execute_sql_models, text_to_sql_models
+from services.complexity_classifier import Complexity_Classifier
+from services.slm_service import SLMService
 router = APIRouter()
 
 @router.post("/text-to-sql", tags=["Text to SQL"])
-async def create_schema(payload: RequestPayloadModel|None=None):
-    pass
+async def create_schema(
+    payload: text_to_sql_models.RequestModel,
+    testing: bool = Query(default=False, description="Testing mode")):
+    cc = Complexity_Classifier(payload.er_diagram_json, payload.text)
+    complexity = cc()
+
+    slm = SLMService()
+    sql, data = await slm(
+        data=payload, complexity=complexity, testing=testing)
+
+    print("API Success Response", sql)
+    return {"sql": sql, "data": data}
 
 @router.post("/execute-sql", tags=["Execute SQL"], 
             status_code=200,
