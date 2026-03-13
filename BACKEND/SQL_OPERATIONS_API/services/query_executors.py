@@ -47,8 +47,9 @@ def run_sql_queries(db_connection_string: str, queries: list[str]) -> list[Query
 def run_text_to_sql_queries(db_connection_string: str, query: str) -> list | str:
     try:
         engine = create_engine(db_connection_string)
+        result = []
         with engine.connect() as conn:
             result = _run_select_query(conn, query)
-            return result
+        return result
     except Exception as e:
         return f"ERROR: {str(e)}"

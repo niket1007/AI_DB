@@ -1,6 +1,5 @@
 import json
 import re
-import time
 from decouple import config
 from huggingface_hub import AsyncInferenceClient
 from Exceptions.custom_exception import CustomException
@@ -12,14 +11,12 @@ from ollama import AsyncClient
 
 class SLMService:
     def __init__(self):
-        self.api_token = config("HUGGINGFACE_TOKEN", default="")
-        self.model_id = "phi3:medium"
+        self.model_id = "qwen2.5-coder:7b"
         self.client = AsyncClient()
 
         
 
     def _clean_sql(self, text: str) -> str:
-        """Removes markdown tags and normalizes whitespace."""
         if not text:
             return ""
 
@@ -75,13 +72,13 @@ class SLMService:
             
         return context
 
-    async def _call_chat_completion(self, messages: list) -> str|None:
+    async def _call_chat_completion(self, messages: list, temp: float = 0.0) -> str|None:
         try:
             response = await self.client.chat(
                 model=self.model_id,
                 messages=messages,
                 options={
-                    "temperature": 0.0,
+                    "temperature": temp,
                     "stop": ["#", ";", "###", "\n\n"]
                 }
             )
@@ -123,12 +120,12 @@ class SLMService:
             {"role": "user", "content": user_content}
         ]
 
-    async def __call__(
+    async def call_text_to_sql(
             self, data: RequestModel, complexity: str, testing: bool) -> list:
-        retry_count = 1
+        retry_count = 0
         error = None
         failed_sql = None
-        while retry_count <= 2:
+        while retry_count < 2:
             prompt = self.build_prompt(
                 question=data.text,
                 schema=data.er_diagram_json,
@@ -146,20 +143,44 @@ class SLMService:
                 raise CustomException(
                     message={"error": sql.replace("ERROR: ", "")})
 
-            if testing:
-                return [sql, None]
-            else:
-                result = run_text_to_sql_queries(data.connection_url, sql)
+            # if testing:
+            #     return [sql, None]
+            # else:
+            result = run_text_to_sql_queries(data.connection_url, sql)
 
-                if isinstance(result, str) and result.startswith("ERROR:"):
-                    error = result
-                    failed_sql = sql
-                    retry_count += 1
-                else:
-                    error = None
-                    failed_sql = None
-                    retry_count = 3
-                    return [sql, result]
+            if isinstance(result, str) and result.startswith("ERROR:"):
+                error = result
+                failed_sql = sql
+                retry_count += 1
+            else:
+                return [sql, result, retry_count]
 
         raise CustomException(
             message={"error": "Retry Exhausted, Unable to generate SQL"})
+
+    async def suggest_optimizations(self, stats_context: str) -> str:
+        system_prompt = (
+            "You are an Autonomous Database Administrator (DBA) AI. "
+            "Your goal is to analyze database performance statistics and suggest technical improvements. "
+            "Focus on: 1. Missing Indexes, 2. Query Refactoring, 3. Cache Potential. "
+            "Guidelines:\n"
+            "- Be technically precise.\n"
+            "- If a query structure uses LIKE without wildcards, suggest exact matching or indexes.\n"
+            "- If a table is queried frequently without an index on filter columns, suggest a CREATE INDEX command.\n"
+            "- Provide suggestions in clear, bulleted Natural Language."
+        )
+        
+        user_prompt = (
+            "Here are the top most expensive queries from our database profiling tables:\n"
+            f"{stats_context}\n\n"
+            "Based on these structures, what specific performance optimizations do you suggest?"
+        )
+        
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt}
+        ]
+        
+        # Slightly higher temperature (0.2) for suggestions to allow for broader reasoning
+        response = await self._call_chat_completion(messages, temp=0.2)
+        return response if response else "No suggestions available at this time."

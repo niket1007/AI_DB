@@ -1,0 +1,4 @@
+Ollama
+Models:
+    1) qwen2.5-coder:7b
+    2) deepseek-r1:8b

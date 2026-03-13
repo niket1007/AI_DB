@@ -1,11 +1,14 @@
 import streamlit as st
-from services.services import get_connection_strings
+import json
+
+from services.services import get_connection_strings, call_text_to_sql_api
 
 def show_chat_ui_page():
     if st.session_state.get("logged_in", False):
         st.title("Text to SQL (Module 2)")
 
         connections = st.session_state.get("connections", None)
+        selected_connection = None
         if connections is None:
             print("Inside if")
             connections = get_connection_strings()
@@ -20,10 +23,9 @@ def show_chat_ui_page():
         
         for conn in conn_map:
             if conn[1] == selected_name:
-                selected_conn_string = conn[2]
+                selected_connection = conn
         
-        st.text(f"Connected to: {selected_conn_string[:20]}...")
-
+        st.text(f"Connected to: {selected_connection[2][:20]}...")
         st.subheader("Chat with your data")
         
         if "messages" not in st.session_state:
@@ -34,7 +36,19 @@ def show_chat_ui_page():
 
         for message in st.session_state.messages:
             with st.chat_message(message["role"]):
-                st.markdown(message["content"])
+                if message["role"] == "ai":
+                    status, result = message["content"]
+                    if status == True:
+                        st.markdown("### 🛢️ SQL Query")
+                        st.code(result.get("sql"), language="sql")
+                        st.markdown("---")
+                        st.markdown("### 📊 Data")
+                        st.json(result["data"])
+                    else:
+                        st.markdown("### ❌ Error")
+                        st.code(result, language="text")
+                else:
+                    st.markdown(message["content"])
 
         if prompt := st.chat_input("Ask a question in plain English (e.g., 'How many users are there?')"):
             st.session_state.messages.append({"role": "user", "content": prompt})
@@ -42,15 +56,19 @@ def show_chat_ui_page():
                 st.markdown(prompt)
             
             with st.chat_message("ai"):
-                response = f"""
-    This is a **mock response** for the database at `{selected_name}`.
-
-    Module 2 (Text-to-SQL) is not yet implemented.
-
-    Your query was: *"{prompt}"*
-                """
-                st.markdown(response)
-                st.session_state.messages.append({"role": "ai", "content": response})
+                er_diagram = json.loads(selected_connection[-1])
+                with st.spinner("Generating Query and Fetching data from DB........"):
+                    status, result = call_text_to_sql_api(selected_connection[2], prompt, er_diagram)
+                    if status == True:
+                        st.markdown("### 🛢️ SQL Query")
+                        st.code(result.get("sql"), language="sql")
+                        st.markdown("---")
+                        st.markdown("### 📊 Data")
+                        st.json(result["data"])
+                    else:
+                        st.markdown("### ❌ Error")
+                        st.code(result, language="text")
+                    st.session_state.messages.append({"role": "ai", "content": [status, result]})
     else:
         st.session_state.page = "login"
         st.rerun()

@@ -2,6 +2,7 @@ import requests
 import json
 import streamlit as st
 from decouple import config
+from typing import Any
 from db.services import DBService
 
 def call_schema_api(connection_string: str, json_payload_dict: dict) -> bool:
@@ -16,7 +17,7 @@ def call_schema_api(connection_string: str, json_payload_dict: dict) -> bool:
     log_container.markdown(log_content)
 
     try:
-        url = config("api_url", cast=str, default="http://127.0.0.1:8000") + "/create-schema"
+        url = config("spc_api_url", cast=str, default="http://127.0.0.1:8000") + "/create-schema"
 
         with requests.request(
             "POST",url,
@@ -113,7 +114,7 @@ def call_query_executor_api(connection_string: str, queries: list[str]) -> bool:
     status = False
 
     try:
-        url = config("api_url", cast=str, default="http://127.0.0.1:8000") + "/execute-sql"
+        url = config("so_api_url", cast=str, default="http://127.0.0.1:8000") + "/execute-sql"
 
         with requests.request(
             "POST",url,
@@ -147,3 +148,36 @@ def call_query_executor_api(connection_string: str, queries: list[str]) -> bool:
     except Exception as e:
         st.error(f"An unexpected error occurred: {e}")
         return False
+
+def call_text_to_sql_api(connection_string: str, question: str, er_diagram: dict) -> list[bool, Any]:
+    api_payload = {
+        "connection_url": connection_string,
+        "text": question,
+        "er_diagram_json": er_diagram
+    }
+    status = False
+
+    try:
+        url = config("so_api_url", cast=str, default="http://127.0.0.1:8000") + "/text-to-sql"
+
+        with requests.request(
+            "POST",url,
+            json=api_payload,
+            headers={'Content-Type': 'application/json'}) as r:
+
+            if r.status_code == 200:
+                results = r.json()
+                print(results)
+                return [True, results]
+            else:
+                error_data = r.json()
+                print(error_data)
+                return [False, error_data.get("error", "Unable to generate.")]
+
+        return status
+    except requests.exceptions.RequestException as e:
+        st.error(f"Connection Error: Failed to connect to the backend API at {url}. Is it running?")
+        return [False, "Failed to connect to server."]
+    except Exception as e:
+        st.error(f"An unexpected error occurred: {e}")
+        return [False, "Unexpecter error"]
