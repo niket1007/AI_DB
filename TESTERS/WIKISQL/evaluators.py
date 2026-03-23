@@ -15,7 +15,7 @@ def log(*args) -> None:
     print(*args, file=f, flush=True)
 
 # --- Configuration ---
-API_URL = "http://127.0.0.1:8001/text-to-sql?testing=true"
+API_URL = "http://127.0.0.1:8001/text-to-sql"
 WIKISQL_DIR = "./wikisql"
 DATA_PATH = os.path.join(WIKISQL_DIR, "dev.jsonl")
 TABLES_PATH = os.path.join(WIKISQL_DIR, "dev.tables.jsonl")
@@ -74,7 +74,6 @@ def decompose_generated_sql(gen_sql: str, schema: Dict) -> Dict:
         # --- Aggregation ---
         for i, agg in enumerate(agg_ops):
             if agg and re.search(rf'\b{agg}\b', select_part, re.IGNORECASE):
-                print("Matched", agg)
                 res["agg"] = i
                 break
 

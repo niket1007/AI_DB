@@ -18,14 +18,13 @@ router = APIRouter()
         },
         tags=["Text to SQL"])
 async def text_to_sql(
-    payload: text_to_sql_models.RequestModel,
-    testing: bool = Query(default=False, description="Testing mode")):
+    payload: text_to_sql_models.RequestModel):
     cc = Complexity_Classifier(payload.er_diagram_json, payload.text)
     complexity = cc()
 
     slm = SLMService()
     sql, data, retry_count = await slm.call_text_to_sql(
-        data=payload, complexity=complexity, testing=testing)
+        data=payload, complexity=complexity)
 
     print("API Success Response", sql)
     return {"sql": sql, "data": data, "model_retries": retry_count}

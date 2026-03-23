@@ -1,7 +1,6 @@
 import json
 import re
 from decouple import config
-from huggingface_hub import AsyncInferenceClient
 from Exceptions.custom_exception import CustomException
 from models.text_to_sql_models import RequestModel
 from models.db_schema_model import JSONModel
@@ -11,7 +10,7 @@ from ollama import AsyncClient
 
 class SLMService:
     def __init__(self):
-        self.model_id = "qwen2.5-coder:7b"
+        self.model_id = "llama3.1:8b"
         self.client = AsyncClient()
 
         
@@ -20,19 +19,15 @@ class SLMService:
         if not text:
             return ""
 
+        # 1. Remove DeepSeek/Reasoning thought blocks
+        text = re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL | re.IGNORECASE)
+        
+        # 2. Existing markdown and newline cleaning
         text = re.sub(r'```sql', '', text, flags=re.IGNORECASE)
         text = re.sub(r'```', '', text)
         text = text.replace("\n", " ")
         
-        prefixes = [
-            r"^here is the query:?", 
-            r"^sql:?", 
-            r"^the query is:?",
-            r"^assistant:?"
-        ]
-        for pattern in prefixes:
-            text = re.sub(pattern, '', text, flags=re.IGNORECASE).strip()
-            
+        # ... rest of your existing prefix cleaning logic ...
         return text.strip()
 
     def _get_db_dialect(self, url: str) -> str:
@@ -62,7 +57,7 @@ class SLMService:
 
     def _format_schema_context(self, schema: JSONModel) -> str:
         context = "Database Schema (JSON Format):\n"
-        tables_data = [table.model_dump() for table in schema.tables]
+        tables_data = [table.model_dump(exclude_defaults=True) for table in schema.tables]
         context += json.dumps(tables_data, indent=2)
         
         if schema.relationships:
@@ -78,8 +73,8 @@ class SLMService:
                 model=self.model_id,
                 messages=messages,
                 options={
-                    "temperature": temp,
-                    "stop": ["#", ";", "###", "\n\n"]
+                    "temperature": temp
+                    # "stop": ["#", ";", "###", "\n\n"]
                 }
             )
             if response and 'message' in response:
@@ -121,11 +116,12 @@ class SLMService:
         ]
 
     async def call_text_to_sql(
-            self, data: RequestModel, complexity: str, testing: bool) -> list:
+            self, data: RequestModel, complexity: str) -> list:
         retry_count = 0
         error = None
         failed_sql = None
         while retry_count < 2:
+
             prompt = self.build_prompt(
                 question=data.text,
                 schema=data.er_diagram_json,
@@ -133,19 +129,16 @@ class SLMService:
                 complexity=complexity,
                 error_msg=error,
                 failed_sql=failed_sql)
-            
+
             sql = await self._call_chat_completion(prompt)
-            
-            if sql is None:
+
+            if sql is None or sql == "":
                 raise CustomException(
                     message={"error": "Unable to generate SQL"})
             elif sql.startswith("ERROR:"):
                 raise CustomException(
                     message={"error": sql.replace("ERROR: ", "")})
-
-            # if testing:
-            #     return [sql, None]
-            # else:
+            
             result = run_text_to_sql_queries(data.connection_url, sql)
 
             if isinstance(result, str) and result.startswith("ERROR:"):
@@ -180,7 +173,6 @@ class SLMService:
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt}
         ]
-        
-        # Slightly higher temperature (0.2) for suggestions to allow for broader reasoning
+
         response = await self._call_chat_completion(messages, temp=0.2)
         return response if response else "No suggestions available at this time."
