@@ -49,7 +49,7 @@ async def parse_and_create_schema(data: RequestPayloadModel) -> list[str]:
     try:
         engine = create_engine(db_connection_string)
         metadata = MetaData()
-        tables = {} # Hold SQLAlchemy Table objects
+        tables = {}
     except Exception as e:
         result_log.append(f"ERROR: Could not create database engine.\n{str(e)}")
         return result_log

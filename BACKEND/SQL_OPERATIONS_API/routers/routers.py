@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Query
+from fastapi import APIRouter
 
 #Models
 from models import execute_sql_models, text_to_sql_models
@@ -26,7 +26,6 @@ async def text_to_sql(
     sql, data, retry_count = await slm.call_text_to_sql(
         data=payload, complexity=complexity)
 
-    print("API Success Response", sql)
     return {"sql": sql, "data": data, "model_retries": retry_count}
 
 @router.post(

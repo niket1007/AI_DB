@@ -2,7 +2,7 @@ import streamlit as st
 from static.json_related_data import EXAMPLE_JSON_SCHEMA
 from static.connection_string_example import CONNECTION_STRING_GUIDE
 import json
-from services.services import call_schema_api, save_connection_string
+from services.services import call_schema_api, save_connection_string, add_query_stat_table
 
 @st.dialog("Save connection string")
 def save_connection_string_dialog(connection_string, json_schema_text):
@@ -40,6 +40,7 @@ def show_schema_creator_page():
             
             try:
                 json_payload_dict = json.loads(json_schema_text)
+                json_payload_dict["tables"].append(add_query_stat_table())
             except json.JSONDecodeError as e:
                 st.error(f"Invalid JSON format in text area: {e}")
                 return

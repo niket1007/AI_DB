@@ -181,3 +181,58 @@ def call_text_to_sql_api(connection_string: str, question: str, er_diagram: dict
     except Exception as e:
         st.error(f"An unexpected error occurred: {e}")
         return [False, "Unexpecter error"]
+
+def add_query_stat_table() -> dict:
+    return {
+        "name": "query_stats",
+        "description": "Internal Table for capturing query stats",
+        "columns": [
+            {
+                "name": "id",
+                "type": "INTEGER",
+                "primary_key": True,
+                "autoincrement": True,
+                "nullable": False,
+                "description": "Query Stat id" 
+            },
+            {
+                "name": "query_text",
+                "type": "VARCHAR",
+                "size": 200,
+                "nullable": False,
+                "description": "Query"
+            },
+            {
+                "name": "execution_time_ms",
+                "type": "FLOAT",
+                "nullable": False,
+                "description": "query execution time"
+            },
+            {
+                "name": "complexity",
+                "type": "VARCHAR",
+                "size": 20,
+                "nullable": False,
+                "description": "query complexity"
+            },
+            {
+                "name": "row_count",
+                "type": "INTEGER",
+                "nullable": False,
+                "description": "number of rows in query result"
+            },
+            {
+                "name": "is_opti_agent_run",
+                "type": "BOOLEAN",
+                "nullable": False,
+                "description": "has agent ran this query"
+            },
+            {
+                "name": "created_at",
+                "type": "DATETIME",
+                "nullable": False,
+                "default": "CURRENT_TIMESTAMP",
+                "description": "row creation timestamp"
+            }
+        ]
+    }
