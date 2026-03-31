@@ -7,10 +7,11 @@ def show_schema_graph_ui_page():
     if st.session_state.get("logged_in", False):
         st.title("Schema Graph")
         connections = st.session_state.get("connections", None)
-        if connections is None:
+
+        if connections is None or connections == []:
             connections = get_connection_strings()
             st.session_state["connections"] = connections
-            if connections is None:
+            if connections is None or connections == []:
                 st.warning("No connections saved.")
                 return
 

@@ -1,6 +1,7 @@
 import json
 import re
 from decouple import config
+from fastapi import BackgroundTasks
 from Exceptions.custom_exception import CustomException
 from models.text_to_sql_models import RequestModel
 from models.db_schema_model import JSONModel
@@ -116,7 +117,7 @@ class SLMService:
         ]
 
     async def call_text_to_sql(
-            self, data: RequestModel, complexity: str) -> list:
+            self, data: RequestModel, complexity: str, bg_task: BackgroundTasks) -> list:
         retry_count = 0
         error = None
         failed_sql = None
@@ -139,7 +140,7 @@ class SLMService:
                 raise CustomException(
                     message={"error": sql.replace("ERROR: ", "")})
             
-            result = run_text_to_sql_queries(data.connection_url, sql)
+            result = run_text_to_sql_queries(data.connection_url, sql, bg_task)
 
             if isinstance(result, str) and result.startswith("ERROR:"):
                 error = result

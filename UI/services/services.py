@@ -209,11 +209,10 @@ def add_query_stat_table() -> dict:
                 "description": "query execution time"
             },
             {
-                "name": "complexity",
-                "type": "VARCHAR",
-                "size": 20,
+                "name": "success_status",
+                "type": "BOOLEAN",
                 "nullable": False,
-                "description": "query complexity"
+                "description": "query success status"
             },
             {
                 "name": "row_count",
@@ -222,9 +221,16 @@ def add_query_stat_table() -> dict:
                 "description": "number of rows in query result"
             },
             {
+                "name": "error_message",
+                "type": "VARCHAR",
+                "size": 200,
+                "description": "failed error message"
+            },
+            {
                 "name": "is_opti_agent_run",
                 "type": "BOOLEAN",
                 "nullable": False,
+                "default": "false",
                 "description": "has agent ran this query"
             },
             {

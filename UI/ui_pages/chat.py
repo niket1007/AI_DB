@@ -9,10 +9,10 @@ def show_chat_ui_page():
 
         connections = st.session_state.get("connections", None)
         selected_connection = None
-        if connections is None:
+        if connections is None or connections == []:
             print("Inside if")
             connections = get_connection_strings()
-            if connections is None:
+            if connections is None or connections == []:
                 st.warning("No connections saved.")
                 return
 
