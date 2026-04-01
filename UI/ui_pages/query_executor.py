@@ -1,6 +1,10 @@
 import streamlit as st
-from services.services import get_connection_strings, check_valid_query, call_query_executor_api
 import pandas as pd
+
+# Services
+from services.services import get_connection_strings, check_valid_query, call_query_executor_api
+
+# Static
 from static.queries_example import QUERIES_EXAMPLE
 
 def show_query_executor_ui_page():
@@ -24,8 +28,8 @@ def show_query_executor_ui_page():
         for conn in conn_map:
             if conn[1] == selected_name:
                 selected_connection_string = conn[2]
-        
-        st.text(f"Selected Connection: {selected_connection_string}")
+
+        st.text(f"Selected Connection: {selected_connection_string[:20]}")
 
         with st.expander("Click to see supported query examples"):
             st.markdown(QUERIES_EXAMPLE)
@@ -34,7 +38,7 @@ def show_query_executor_ui_page():
             data=pd.DataFrame(columns=["Query"]), 
             num_rows="dynamic")
         
-        is_submitted = st.button("Run queries")
+        is_submitted = st.button("Run queries", type="primary")
 
         if is_submitted:
             df_dict = df.to_dict(orient="list")

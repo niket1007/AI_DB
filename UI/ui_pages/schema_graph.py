@@ -24,7 +24,7 @@ def show_schema_graph_ui_page():
             if conn[1] == selected_name:
                 selected_db_schema = conn[-1]
         
-        st.text(f"Selected database: {selected_name}")
+        st.text(f"Selected database: {selected_name[:20]}")
 
         graph = graphviz.Graph()
         selected_db_schema = json.loads(selected_db_schema)

@@ -84,7 +84,8 @@ class SpiderEvaluator:
                 where_node = p.find(exp.Where)
                 where_sql = self._normalize_operators(where_node).sql() if where_node else ""
                 return {"cols": cols, "joins": joins, "where": where_sql}
-            except: return None
+            except: 
+                return None
 
         g, s = parse(gen_sql), parse(gold_sql)
         if not g or not s:

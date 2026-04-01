@@ -17,7 +17,7 @@ def call_schema_api(connection_string: str, json_payload_dict: dict) -> bool:
     log_container.markdown(log_content)
 
     try:
-        url = config("spc_api_url", cast=str, default="http://127.0.0.1:8000") + "/create-schema"
+        url = config("spc_api_url", cast=str) + "/create-schema"
 
         with requests.request(
             "POST",url,
@@ -80,7 +80,7 @@ def save_connection_string(conn_name: str, conn_string: str, schema: str):
         
         if "connections" not in st.session_state:
             st.session_state["connections"] = []
-        print(st.session_state["connections"])
+
         st.session_state["connections"].append((
             res[1], conn_name, conn_string, schema))
 
@@ -114,7 +114,7 @@ def call_query_executor_api(connection_string: str, queries: list[str]) -> bool:
     status = False
 
     try:
-        url = config("so_api_url", cast=str, default="http://127.0.0.1:8000") + "/execute-sql"
+        url = config("so_api_url", cast=str) + "/execute-sql"
 
         with requests.request(
             "POST",url,
@@ -158,7 +158,7 @@ def call_text_to_sql_api(connection_string: str, question: str, er_diagram: dict
     status = False
 
     try:
-        url = config("so_api_url", cast=str, default="http://127.0.0.1:8000") + "/text-to-sql"
+        url = config("so_api_url", cast=str) + "/text-to-sql"
 
         with requests.request(
             "POST",url,
@@ -167,11 +167,9 @@ def call_text_to_sql_api(connection_string: str, question: str, er_diagram: dict
 
             if r.status_code == 200:
                 results = r.json()
-                print(results)
                 return [True, results]
             else:
                 error_data = r.json()
-                print(error_data)
                 return [False, error_data.get("error", "Unable to generate.")]
 
         return status
@@ -181,6 +179,38 @@ def call_text_to_sql_api(connection_string: str, question: str, er_diagram: dict
     except Exception as e:
         st.error(f"An unexpected error occurred: {e}")
         return [False, "Unexpecter error"]
+
+def call_optimize_api(connection_string: str, er_diagram: dict)-> list[bool, Any]:
+    api_payload = {
+        "connection_url": connection_string,
+        "er_diagram_json": er_diagram
+    }
+    status = False
+
+    try:
+        url = config("so_api_url", cast=str) + "/optimize"
+
+        with requests.request(
+            "POST",url,
+            json=api_payload,
+            headers={'Content-Type': 'application/json'}) as r:
+
+            if r.status_code == 200:
+                results = r.json()
+                return [True, results]
+            else:
+                error_data = r.json()
+                print(error_data)
+                return [False, error_data.get("error", "Unable to connect to server.")]
+
+        return status
+    except requests.exceptions.RequestException as e:
+        st.error(f"Connection Error: Failed to connect to the backend API at {url}. Is it running?")
+        return [False, "Failed to connect to server."]
+    except Exception as e:
+        st.error(f"An unexpected error occurred: {e}")
+        return [False, "Unexpecter error"]
+
 
 def add_query_stat_table() -> dict:
     return {
@@ -197,8 +227,7 @@ def add_query_stat_table() -> dict:
             },
             {
                 "name": "query_text",
-                "type": "VARCHAR",
-                "size": 200,
+                "type": "TEXT",
                 "nullable": False,
                 "description": "Query"
             },
@@ -222,8 +251,7 @@ def add_query_stat_table() -> dict:
             },
             {
                 "name": "error_message",
-                "type": "VARCHAR",
-                "size": 200,
+                "type": "TEXT",
                 "description": "failed error message"
             },
             {

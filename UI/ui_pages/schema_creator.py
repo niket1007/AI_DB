@@ -11,7 +11,7 @@ def save_connection_string_dialog(connection_string, json_schema_text):
 
     conn_name = st.text_input("Connection Name", "My New Database")
     connection_string_to_save = st.text_input("Connection String", connection_string, disabled=True)
-    is_clicked = st.button(label="Save Connection")
+    is_clicked = st.button(label="Save Connection", type="primary")
     if is_clicked: 
         save_connection_string(conn_name, connection_string_to_save, json_schema_text)
 
@@ -31,7 +31,7 @@ def show_schema_creator_page():
         st.subheader("2. Define Your Schema")
         json_schema_text = st.text_area("Paste your JSON Schema here", EXAMPLE_JSON_SCHEMA, height=400)
         
-        is_vc_buton_clicked = st.button(label="Validate and Create Schema")
+        is_vc_buton_clicked = st.button(label="Validate and Create Schema", type="primary")
 
         if is_vc_buton_clicked:
             if not connection_string or not json_schema_text:

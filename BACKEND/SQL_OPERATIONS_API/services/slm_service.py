@@ -11,7 +11,7 @@ from ollama import AsyncClient
 
 class SLMService:
     def __init__(self):
-        self.model_id = "llama3.1:8b"
+        self.model_id = config("model", cast=str)
         self.client = AsyncClient()
 
         
@@ -53,7 +53,8 @@ class SLMService:
             "6. MINIMAL FILTERS: Only include WHERE conditions for columns explicitly mentioned as constraints in the question. "
             "Do not guess or add extra filters for context.\n"
             "7. LITERALS: If a symbol (%, $, .) is in the question, treat it as a literal character in the value string.\n"
-            "8. LIMIT: Never add a LIMIT clause unless a specific rank (e.g., 'top 5') is requested."
+            "8. LIMIT: Never add a LIMIT clause unless a specific rank (e.g., 'top 5') is requested.\n"
+            "9. JOINS: If a question requires data from multiple tables, you MUST use the Defined Relationships to JOIN them."
         )
 
     def _format_schema_context(self, schema: JSONModel) -> str:
@@ -65,7 +66,7 @@ class SLMService:
             context += "\n\nDefined Relationships (Foreign Keys):\n"
             rels = [f"- {r.from_table}.{r.from_column} references {r.to_table}.{r.to_column}" for r in schema.relationships]
             context += "\n".join(rels)
-            
+
         return context
 
     async def _call_chat_completion(self, messages: list, temp: float = 0.0) -> str|None:
@@ -78,6 +79,7 @@ class SLMService:
                     # "stop": ["#", ";", "###", "\n\n"]
                 }
             )
+
             if response and 'message' in response:
                 return self._clean_sql(response['message'].get('content', ""))
             return None

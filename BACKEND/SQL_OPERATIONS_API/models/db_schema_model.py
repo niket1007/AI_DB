@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 from typing import Optional, Annotated, Literal, List
 
-SUPPORTED_DATATYPE = Literal["INTEGER", "FLOAT", "VARCHAR", "CHAR", "DATETIME", "DATE", "TIME", "BOOLEAN"]
+SUPPORTED_DATATYPE = Literal["INTEGER", "FLOAT", "VARCHAR", "CHAR", "DATETIME", "DATE", "TIME", "BOOLEAN", "TEXT"]
 
 class BaseTableColumnModel(BaseModel):
     name: Annotated[

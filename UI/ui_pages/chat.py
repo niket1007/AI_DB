@@ -10,7 +10,6 @@ def show_chat_ui_page():
         connections = st.session_state.get("connections", None)
         selected_connection = None
         if connections is None or connections == []:
-            print("Inside if")
             connections = get_connection_strings()
             if connections is None or connections == []:
                 st.warning("No connections saved.")
@@ -38,7 +37,7 @@ def show_chat_ui_page():
             with st.chat_message(message["role"]):
                 if message["role"] == "ai":
                     status, result = message["content"]
-                    if status == True:
+                    if status:
                         st.markdown("### 🛢️ SQL Query")
                         st.code(result.get("sql"), language="sql")
                         st.markdown("---")
@@ -59,7 +58,7 @@ def show_chat_ui_page():
                 er_diagram = json.loads(selected_connection[-1])
                 with st.spinner("Generating Query and Fetching data from DB........"):
                     status, result = call_text_to_sql_api(selected_connection[2], prompt, er_diagram)
-                    if status == True:
+                    if status:
                         st.markdown("### 🛢️ SQL Query")
                         st.code(result.get("sql"), language="sql")
                         st.markdown("---")

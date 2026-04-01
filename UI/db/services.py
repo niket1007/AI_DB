@@ -58,7 +58,6 @@ class DBService:
         try:
             create_query = ('INSERT INTO User_Connections (u_id, name, conn_string, schema) ' + 
                             f'VALUES({u_id}, "{name}", "{conn_string}", \'{schema}\')')
-            print(create_query)
             cursor = self.conn.cursor()
             cursor.execute(create_query)
             self.conn.commit()

@@ -6,6 +6,7 @@ from ui_pages.json_guide import show_json_guide_page
 from ui_pages.schema_creator import show_schema_creator_page
 from ui_pages.schema_graph import show_schema_graph_ui_page
 from ui_pages.query_executor import show_query_executor_ui_page
+from ui_pages.optimize_db import show_optimize_db_ui_page
 
 st.set_page_config(page_title="AI-DB", layout="wide")
 
@@ -32,7 +33,9 @@ def main():
         if st.sidebar.button("Chat with DB (Module 2)"):
             st.session_state.page = "chat" 
         if st.sidebar.button("Query Executor"):
-            st.session_state.page = "query_executor"   
+            st.session_state.page = "query_executor"
+        if st.sidebar.button("Optimize DB"):
+            st.session_state.page = "optimize_db"  
         st.sidebar.markdown("---")
         if st.sidebar.button("Logout"):
             st.session_state.logged_in = False
@@ -64,6 +67,8 @@ def main():
         show_schema_graph_ui_page()
     elif st.session_state.page == "query_executor" and st.session_state.logged_in:
         show_query_executor_ui_page()
+    elif st.session_state.page == "optimize_db" and st.session_state.logged_in:
+        show_optimize_db_ui_page()
     else:
         st.session_state.page = "login"
         st.session_state.logged_in = False

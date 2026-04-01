@@ -3,7 +3,7 @@ from sqlalchemy import (
     create_engine
 )
 from sqlalchemy import (
-    Integer, Float, VARCHAR, CHAR, DateTime, Date, Time, Boolean
+    Integer, Float, VARCHAR, CHAR, DateTime, Date, Time, Boolean, Text
 )
 from sqlalchemy.sql import func
 from sqlalchemy.exc import SQLAlchemyError
@@ -17,7 +17,7 @@ def _get_sql_type(type_name: SUPPORTED_DATATYPE, size: Optional[int] = None):
     if type_name == "CHAR": return CHAR(size)
     type_map = {
         "INTEGER": Integer, "FLOAT": Float, "DATETIME": DateTime,
-        "DATE": Date, "TIME": Time, "BOOLEAN": Boolean,
+        "DATE": Date, "TIME": Time, "BOOLEAN": Boolean, "TEXT": Text
     }
     return type_map[type_name]
 
@@ -30,7 +30,7 @@ def _get_column_args(col_data: BaseTableColumnModel) -> dict:
     }
 
     default_val = col_data.default
-    if default_val:
+    if default_val or default_val is not None:
         if default_val.upper() == "CURRENT_TIMESTAMP":
             col_kwargs["server_default"] = func.now()      
         elif col_data.type == "BOOLEAN":
@@ -77,7 +77,6 @@ async def parse_and_create_schema(data: RequestPayloadModel) -> list[str]:
             tables[table_name] = Table(table_name, metadata, *col_defs)
             
             result_log.append(f"Log: Definition for table '{table_name}' prepared.")
-            await asyncio.sleep(0.1)
 
         # Prepare all Foreign Key constraints
         if schema_data.relationships:
@@ -91,7 +90,6 @@ async def parse_and_create_schema(data: RequestPayloadModel) -> list[str]:
                 )
                 from_table.append_constraint(fk_constraint)
                 result_log.append(f"Log: Definition for relationship '{rel_data.from_table}.{rel_data.from_column} -> {rel_data.to_column}' prepared.")
-                await asyncio.sleep(0.1)
 
         # Prepare all Index objects
         if schema_data.indexes:
@@ -101,7 +99,6 @@ async def parse_and_create_schema(data: RequestPayloadModel) -> list[str]:
                 columns_to_index = [table.c[col_name] for col_name in idx_data.columns]
                 Index(idx_data.name, *columns_to_index) 
                 result_log.append(f"Log: Definition for index '{idx_data.name}' on table '{idx_data.table}' prepared.")
-                await asyncio.sleep(0.1)
 
     except Exception as e:
         result_log.append(f"ERROR: Failed during definition phase.\n{str(e)}")

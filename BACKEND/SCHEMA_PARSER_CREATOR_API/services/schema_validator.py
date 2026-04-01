@@ -27,6 +27,9 @@ def json_table_validator(tables: list[TableModel]) -> list[str]:
                 errors.append(f"Table '{table.name}', Column '{column.name}': Type '{column.type}' must not have a 'size' field.")
             if column.type in ["VARCHAR", "CHAR"] and (column.size is None or column.size <= 0):
                 errors.append(f"Table '{table.name}', Column '{column.name}': Type '{column.type}' requires a positive 'size'.")
+            
+            if column.type == "TEXT" and column.size is not None:
+                errors.append(f"Table '{table.name}', Column '{column.name}': Type '{column.type}' does not requires 'size'.")
 
             if (column.default == "CURRENT_TIMESTAMP" and column.type != "DATETIME"):
                 errors.append(f"Table '{table.name}', Column '{column.name}': Default 'CURRENT_TIMESTAMP' can only be used with 'DATETIME' type.")
