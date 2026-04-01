@@ -85,9 +85,6 @@ class SLMService:
             return None
         except Exception as e:
             return f"ERROR: {str(e)}"
-            
-        except Exception as e:
-            return f"ERROR: Ollama failed. {str(e)}"
 
     def build_prompt(
             self, schema: JSONModel, connection_url: str, 
@@ -153,29 +150,3 @@ class SLMService:
 
         raise CustomException(
             message={"error": "Retry Exhausted, Unable to generate SQL"})
-
-    async def suggest_optimizations(self, stats_context: str) -> str:
-        system_prompt = (
-            "You are an Autonomous Database Administrator (DBA) AI. "
-            "Your goal is to analyze database performance statistics and suggest technical improvements. "
-            "Focus on: 1. Missing Indexes, 2. Query Refactoring, 3. Cache Potential. "
-            "Guidelines:\n"
-            "- Be technically precise.\n"
-            "- If a query structure uses LIKE without wildcards, suggest exact matching or indexes.\n"
-            "- If a table is queried frequently without an index on filter columns, suggest a CREATE INDEX command.\n"
-            "- Provide suggestions in clear, bulleted Natural Language."
-        )
-        
-        user_prompt = (
-            "Here are the top most expensive queries from our database profiling tables:\n"
-            f"{stats_context}\n\n"
-            "Based on these structures, what specific performance optimizations do you suggest?"
-        )
-        
-        messages = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
-        ]
-
-        response = await self._call_chat_completion(messages, temp=0.2)
-        return response if response else "No suggestions available at this time."

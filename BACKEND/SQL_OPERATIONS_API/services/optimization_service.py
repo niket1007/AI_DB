@@ -93,13 +93,11 @@ class OptimizationService:
             if stat["success_status"]:
                 prompt = self._get_prompt(db, stat)
                 response = await self._call_chat_completion(prompt, 0.1)
-                print(response)
+
                 if response is None or response == "":
-                    raise CustomException(
-                        message={"error": "Unable to generate SQL"})
+                    response = "ERROR: SLM failed to generate a suggestion for this query."
                 elif response.startswith("ERROR:"):
-                    raise CustomException(
-                        message={"error": response.replace("ERROR: ", "")})
+                    response = response
                 
                 result.append(
                     SuggestionModel(

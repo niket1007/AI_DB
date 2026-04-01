@@ -49,9 +49,12 @@ def show_optimize_db_ui_page():
                             with st.expander(f"{index}"):
                                 st.markdown("**Original Query:**")
                                 st.code(insight['query'], language="sql")
-                                
+
                                 st.markdown("**SLM Suggestion:**")
-                                st.info(insight['suggestion'])
+                                msg_type = st.info
+                                if insight["suggestion"].startswith("ERROR"):
+                                    msg_type = st.error
+                                msg_type(insight['suggestion'])
                                 
                 except requests.exceptions.RequestException as e:
                     st.error(f"Failed to connect to the optimization API: {e}")
