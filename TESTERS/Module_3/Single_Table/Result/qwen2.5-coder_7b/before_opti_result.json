@@ -1,0 +1,24 @@
+{
+    "suggestions": [
+        {
+            "query": "SELECT * FROM server_logs WHERE log_level = %s AND response_time_ms > %s",
+            "suggestion": "**ISSUE:** The query is performing a full table scan on the `server_logs` table, which is inefficient for large datasets.\n\n**TYPE:** Performance Optimization\n\n**ACTION:** Create an index on the columns used in the WHERE clause (`response_time_ms` and `log_level`). This will significantly reduce the number of rows that need to be scanned during query execution."
+        },
+        {
+            "query": "SELECT * FROM server_logs WHERE user_agent = %s",
+            "suggestion": "ISSUE: The query performance varies significantly based on the `user_agent` value, indicating data skew.\nTYPE: SQL\nACTION: CREATE INDEX user_agent_idx ON server_logs (user_agent);"
+        },
+        {
+            "query": "SELECT DATE(timestamp), AVG(response_time_ms) FROM server_logs WHERE payload_size > %s GROUP BY DATE(timestamp)",
+            "suggestion": "**ISSUE:** The query performance is suboptimal, with execution times ranging from 197ms to 266ms for different literal values in the WHERE clause.\n\n**TYPE:** Performance Optimization\n\n**ACTION:** Implement an index on the `payload_size` column and consider creating a partial index on the `timestamp` column if it's frequently used in conjunction with `payload_size`. Additionally, analyze the query execution plan to identify any bottlenecks and optimize further based on the findings."
+        },
+        {
+            "query": "SELECT * FROM server_logs WHERE client_ip = %s AND status_code = %s",
+            "suggestion": "**ISSUE:** The query is performing a full table scan on the `server_logs` table, which is inefficient for large datasets.\n\n**TYPE:** Performance Optimization\n\n**ACTION:** Create an index on the columns used in the WHERE clause of the query (i.e., `client_ip` and `status_code`). This will significantly reduce the number of rows that need to be scanned, improving query performance."
+        },
+        {
+            "query": "SELECT server_id, COUNT(*) FROM server_logs WHERE endpoint = %s AND payload_size > %s GROUP BY server_id",
+            "suggestion": "**ISSUE:** The query is experiencing performance issues due to a large number of rows being scanned, which leads to high CPU usage and slow response times.\n\n**TYPE:** Performance Optimization\n\n**ACTION:** Implement an index on the `endpoint` column and the `payload_size` column in the `server_logs` table. This will significantly reduce the time required to filter and aggregate the data based on these columns. Additionally, consider partitioning the table by date or other relevant criteria if it is large enough to benefit from it.\n\n**EXPLANATION:** Creating an index on the `endpoint` column will speed up the filtering process for different endpoints. Similarly, indexing the `payload_size` column will enhance the performance of the aggregation operations based on this attribute. Partitioning can further optimize query performance by reducing the amount of data scanned during each operation, especially if queries often involve specific time ranges or endpoint types."
+        }
+    ]
+}

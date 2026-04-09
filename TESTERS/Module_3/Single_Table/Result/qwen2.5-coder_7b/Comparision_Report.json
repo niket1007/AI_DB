@@ -1,0 +1,59 @@
+{
+  "benchmark_report": {
+    "metadata": {
+      "total_successful_queries_before": 1000,
+      "total_successful_queries_after": 1000,
+      "description": "Comparative analysis of execution times before and after PostgreSQL optimizations for all successful queries."
+    },
+    "summary": {
+      "overall_verdict": "Point lookups and grouping combinations showed excellent improvement. High-selectivity range filters and heavy date aggregations showed no impact or minor regressions, suggesting standard indexing has reached its limit and advanced architectures are needed."
+    },
+    "query_pattern_analysis": [
+      {
+        "pattern_name": "Point Lookup (Exact Match)",
+        "query_pattern": "SELECT * FROM server_logs WHERE client_ip = ? AND status_code = ?;",
+        "before_avg_ms": 249.65,
+        "after_avg_ms": 34.22,
+        "improvement_percentage": "86.29%",
+        "status": "SUCCESS",
+        "analysis": "The composite index `idx_server_logs_ip_status` completely resolved the bottleneck, dropping execution time from ~250ms to ~34ms."
+      },
+      {
+        "pattern_name": "Covering Aggregation (Group By)",
+        "query_pattern": "SELECT server_id, COUNT(*) FROM server_logs WHERE endpoint = ? AND payload_size > ? GROUP BY server_id;",
+        "before_avg_ms": 259.66,
+        "after_avg_ms": 119.02,
+        "improvement_percentage": "54.16%",
+        "status": "SUCCESS",
+        "analysis": "A very solid improvement. The covering index effectively optimized the filtering and grouping, cutting the execution time by more than half."
+      },
+      {
+        "pattern_name": "High-Selectivity Range Filter",
+        "query_pattern": "SELECT * FROM server_logs WHERE log_level = ? AND response_time_ms > ?;",
+        "before_avg_ms": 1022.25,
+        "after_avg_ms": 1075.78,
+        "improvement_percentage": "-5.24%",
+        "status": "REGRESSION",
+        "analysis": "Performance slightly degraded. Because this query potentially returns large swathes of the table, PostgreSQL's Bitmap Heap Scan overhead caused it to be marginally slower than a raw Sequential Scan."
+      },
+      {
+        "pattern_name": "Single Column Exact Match",
+        "query_pattern": "SELECT * FROM server_logs WHERE user_agent = ?;",
+        "before_avg_ms": 3734.30,
+        "after_avg_ms": 3442.05,
+        "improvement_percentage": "7.83%",
+        "status": "NO SIGNIFICANT IMPACT",
+        "analysis": "Marginal improvement. Heavy strings like `user_agent` are expensive to index and search, leading to minor gains."
+      },
+      {
+        "pattern_name": "Heavy Date Function Aggregation",
+        "query_pattern": "SELECT DATE(timestamp), AVG(response_time_ms) FROM server_logs WHERE payload_size > ? GROUP BY DATE(timestamp);",
+        "before_avg_ms": 782.54,
+        "after_avg_ms": 772.75,
+        "improvement_percentage": "1.25%",
+        "status": "NO SIGNIFICANT IMPACT",
+        "analysis": "Virtually no impact. The index on `payload_size` was not enough to offset the heavy computation required to dynamically execute `DATE(timestamp)` during the grouping phase."
+      }
+    ]
+  }
+}

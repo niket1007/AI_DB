@@ -1,0 +1,60 @@
+{
+  "benchmark_comparison_report": {
+    "metadata": {
+      "database_environment": "PostgreSQL (Multi-Table)",
+      "total_successful_queries_before": 1000,
+      "total_successful_queries_after": 1000,
+      "description": "Comparative analysis of multi-table query execution times before and after applying optimizations (Indexes & Partitioning)."
+    },
+    "summary": {
+      "overall_verdict": "Point lookups showed solid improvement, but heavy multi-table aggregations and range scans across 5 million rows remained largely static or slightly regressed. This data firmly establishes the upper boundaries of B-Tree indexing and time-based partitioning for complex cross-join analytics."
+    },
+    "query_pattern_analysis": [
+      {
+        "pattern_name": "Point Lookup Across JOIN",
+        "query_pattern": "SELECT * FROM orders o JOIN users u ON o.user_id = u.id WHERE u.username = ?;",
+        "before_avg_ms": 184.83,
+        "after_avg_ms": 143.57,
+        "improvement_percentage": "22.32%",
+        "status": "SUCCESS",
+        "analysis": "A solid improvement. The exact-match index combined with the Foreign Key mapping successfully reduced the nested loop overhead."
+      },
+      {
+        "pattern_name": "Partitioned Date Aggregation",
+        "query_pattern": "SELECT u.tier, SUM(o.amount) as total_revenue FROM users u JOIN orders o ON u.id = o.user_id WHERE o.order_date > ? GROUP BY u.tier HAVING SUM(o.amount) > ?;",
+        "before_avg_ms": 962.28,
+        "after_avg_ms": 925.49,
+        "improvement_percentage": "3.82%",
+        "status": "MARGINAL",
+        "analysis": "Partition pruning provided a minor edge, but grouping by a joined column (`u.tier`) whilst aggregating (`SUM(o.amount)`) across a massive dataset remains an inherent bottleneck for standard row-based relational schemas."
+      },
+      {
+        "pattern_name": "Multi-Condition Range JOIN",
+        "query_pattern": "SELECT u.id, u.username FROM users u JOIN orders o ON u.id = o.user_id WHERE u.tier = ? AND o.amount BETWEEN ? AND ?;",
+        "before_avg_ms": 1167.65,
+        "after_avg_ms": 1092.04,
+        "improvement_percentage": "6.47%",
+        "status": "MARGINAL",
+        "analysis": "A slight improvement. The composite index assisted with the `amount BETWEEN` filter, but fetching and joining the corresponding user rows kept the execution time relatively high."
+      },
+      {
+        "pattern_name": "Filtered Range Scan Across JOIN",
+        "query_pattern": "SELECT u.username, o.amount FROM orders o JOIN users u ON o.user_id = u.id WHERE u.country = ? AND o.status = ? AND o.amount > ?;",
+        "before_avg_ms": 699.88,
+        "after_avg_ms": 720.57,
+        "improvement_percentage": "-2.96%",
+        "status": "REGRESSION",
+        "analysis": "A minor regression. The overhead of planning and executing a Bitmap Heap Scan across multiple indexes proved slightly slower than a brute-force sequential scan and hash join for this specific distribution."
+      },
+      {
+        "pattern_name": "Heavy Count Aggregation Across JOIN",
+        "query_pattern": "SELECT u.country, COUNT(o.id) FROM orders o JOIN users u ON o.user_id = u.id WHERE o.amount > ? GROUP BY u.country;",
+        "before_avg_ms": 658.20,
+        "after_avg_ms": 681.27,
+        "improvement_percentage": "-3.50%",
+        "status": "REGRESSION",
+        "analysis": "Virtually unchanged. Because the query requires grouping by a string located in the `users` table based on a range filter in the `orders` table, indexing cannot resolve the fundamental computation cost."
+      }
+    ]
+  }
+}

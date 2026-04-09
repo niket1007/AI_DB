@@ -200,7 +200,6 @@ def call_optimize_api(connection_string: str, er_diagram: dict)-> list[bool, Any
                 return [True, results]
             else:
                 error_data = r.json()
-                print(error_data)
                 return [False, error_data.get("error", "Unable to connect to server.")]
 
         return status
@@ -255,11 +254,9 @@ def add_query_stat_table() -> dict:
                 "description": "failed error message"
             },
             {
-                "name": "is_opti_agent_run",
-                "type": "BOOLEAN",
-                "nullable": False,
-                "default": "false",
-                "description": "has agent ran this query"
+                "name": "explain_plan",
+                "type": "TEXT",
+                "description": "SQL Explain result"
             },
             {
                 "name": "created_at",

@@ -1,0 +1,53 @@
+{
+  "benchmark_comparison_report": {
+    "metadata": {
+      "total_queries_evaluated": 1000,
+      "description": "Summarized comparative analysis of query execution times before and after optimizations."
+    },
+    "summary": {
+      "overall_verdict": "Point lookups experienced significant optimization. Range filters showed moderate improvement, while aggregations and text-heavy searches showed marginal impact or slight regressions, suggesting structural database modifications may be necessary for those patterns."
+    },
+    "query_pattern_analysis": [
+      {
+        "query_pattern": "SELECT * FROM server_logs WHERE client_ip = ? AND status_code = ?;",
+        "before_avg_ms": 243.74,
+        "after_avg_ms": 33.28,
+        "improvement_percentage": "86.35%",
+        "status": "SUCCESS",
+        "analysis": "Exact-match point lookups saw the most substantial benefit from indexing, eliminating expensive full-table scans."
+      },
+      {
+        "query_pattern": "SELECT * FROM server_logs WHERE log_level = ? AND response_time_ms > ?;",
+        "before_avg_ms": 1049.47,
+        "after_avg_ms": 871.82,
+        "improvement_percentage": "16.93%",
+        "status": "SUCCESS",
+        "analysis": "Moderate improvement was observed. The index assisted with the initial range filter, though fetching large subsets of rows still incurs baseline I/O costs."
+      },
+      {
+        "query_pattern": "SELECT * FROM server_logs WHERE user_agent = ?;",
+        "before_avg_ms": 3757.07,
+        "after_avg_ms": 3423.65,
+        "improvement_percentage": "8.87%",
+        "status": "MARGINAL",
+        "analysis": "Minor performance gains. Standard B-Tree indexing on long strings like user agents provides limited relief."
+      },
+      {
+        "query_pattern": "SELECT DATE(timestamp), AVG(response_time_ms) FROM server_logs WHERE payload_size > ? GROUP BY DATE(timestamp);",
+        "before_avg_ms": 789.49,
+        "after_avg_ms": 774.86,
+        "improvement_percentage": "1.85%",
+        "status": "MARGINAL",
+        "analysis": "Virtually no impact. The dynamic DATE() aggregation remains the primary bottleneck."
+      },
+      {
+        "query_pattern": "SELECT server_id, COUNT(*) FROM server_logs WHERE endpoint = ? AND payload_size > ? GROUP BY server_id;",
+        "before_avg_ms": 255.74,
+        "after_avg_ms": 258.23,
+        "improvement_percentage": "-0.97%",
+        "status": "REGRESSION",
+        "analysis": "A negligible regression. The database was likely already performing this operation efficiently, making the new index redundant for this specific execution plan."
+      }
+    ]
+  }
+}

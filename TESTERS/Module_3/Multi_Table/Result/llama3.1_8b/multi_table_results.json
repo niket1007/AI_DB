@@ -1,0 +1,24 @@
+{
+    "suggestions": [
+        {
+            "query": "SELECT u.id, u.username FROM users AS u JOIN orders AS o ON u.id = o.user_id WHERE u.tier = %s AND o.amount BETWEEN %s AND %s",
+            "suggestion": "ERROR: Failed to connect to Ollama. Please check that Ollama is downloaded, running and accessible. https://ollama.com/download"
+        },
+        {
+            "query": "SELECT u.username, o.amount FROM orders AS o JOIN users AS u ON o.user_id = u.id WHERE u.country = %s AND o.status = %s AND o.amount > %s",
+            "suggestion": "ERROR: Failed to connect to Ollama. Please check that Ollama is downloaded, running and accessible. https://ollama.com/download"
+        },
+        {
+            "query": "SELECT u.tier, SUM(o.amount) AS total_revenue FROM users AS u JOIN orders AS o ON u.id = o.user_id WHERE o.order_date > %s GROUP BY u.tier HAVING SUM(o.amount) > %s",
+            "suggestion": "ERROR: Failed to connect to Ollama. Please check that Ollama is downloaded, running and accessible. https://ollama.com/download"
+        },
+        {
+            "query": "SELECT u.country, COUNT(o.id) FROM orders AS o JOIN users AS u ON o.user_id = u.id WHERE o.amount > %s GROUP BY u.country",
+            "suggestion": "ERROR: Failed to connect to Ollama. Please check that Ollama is downloaded, running and accessible. https://ollama.com/download"
+        },
+        {
+            "query": "SELECT * FROM orders AS o JOIN users AS u ON o.user_id = u.id WHERE u.username = %s",
+            "suggestion": "ERROR: Failed to connect to Ollama. Please check that Ollama is downloaded, running and accessible. https://ollama.com/download"
+        }
+    ]
+}

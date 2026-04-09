@@ -1,0 +1,55 @@
+{
+  "benchmark_comparison_report": {
+    "metadata": {
+      "database_environment": "PostgreSQL (Multi-Table)",
+      "total_successful_queries_before": 1000,
+      "total_successful_queries_after": 1000,
+      "description": "Comparative analysis of query execution times before and after resolving missing Foreign Key and filter indexes."
+    },
+    "summary": {
+      "overall_verdict": "Point lookups across JOINs achieved near-instant execution (99%+ improvement). However, heavy table-wide aggregations and range filters experienced marginal impact or slight regressions, suggesting standard B-Tree indexing is insufficient for these specific execution plans and may require Materialized Views or Partitioning."
+    },
+    "query_pattern_analysis": [
+      {
+        "query_pattern": "SELECT * FROM orders o JOIN users u ON o.user_id = u.id WHERE u.username = ?;",
+        "before_avg_ms": 186.83,
+        "after_avg_ms": 1.18,
+        "improvement_percentage": "99.37%",
+        "status": "SUCCESS",
+        "analysis": "Massive improvement. The combination of the Foreign Key index and the exact-match index on `username` completely eliminated the Nested Loop / Hash Join bottleneck, dropping execution time to ~1ms."
+      },
+      {
+        "query_pattern": "SELECT u.username, o.amount FROM orders o JOIN users u ON o.user_id = u.id WHERE u.country = ? AND o.status = ? AND o.amount > ?;",
+        "before_avg_ms": 754.04,
+        "after_avg_ms": 669.46,
+        "improvement_percentage": "11.22%",
+        "status": "SUCCESS",
+        "analysis": "Moderate improvement. The indexes assisted in filtering `country` and `status` early, but scanning and joining the remaining range of `amount` still incurs a noticeable I/O cost."
+      },
+      {
+        "query_pattern": "SELECT u.country, COUNT(o.id) FROM orders o JOIN users u ON o.user_id = u.id WHERE o.amount > ? GROUP BY u.country;",
+        "before_avg_ms": 670.16,
+        "after_avg_ms": 655.25,
+        "improvement_percentage": "2.23%",
+        "status": "MARGINAL",
+        "analysis": "Virtually no impact. High-volume aggregations grouping by string values across a JOIN boundary are notoriously difficult to speed up with standard indexes alone."
+      },
+      {
+        "query_pattern": "SELECT u.tier, SUM(o.amount) as total_revenue FROM users u JOIN orders o ON u.id = o.user_id WHERE o.order_date > ? GROUP BY u.tier HAVING SUM(o.amount) > ?;",
+        "before_avg_ms": 978.99,
+        "after_avg_ms": 994.75,
+        "improvement_percentage": "-1.61%",
+        "status": "REGRESSION",
+        "analysis": "Slight regression. The overhead of maintaining/reading the indexes didn't overcome the heavy cost of grouping by `tier`, summing massive ranges of `amount`, and applying a `HAVING` clause."
+      },
+      {
+        "query_pattern": "SELECT u.id, u.username FROM users u JOIN orders o ON u.id = o.user_id WHERE u.tier = ? AND o.amount BETWEEN ? AND ?;",
+        "before_avg_ms": 1180.19,
+        "after_avg_ms": 1311.53,
+        "improvement_percentage": "-11.13%",
+        "status": "REGRESSION",
+        "analysis": "Noticeable regression. The PostgreSQL Query Planner likely attempted a Bitmap Index Scan using the new composite indexes, which ended up being less efficient than its original raw Sequential Scan + Hash Join strategy for this specific data skew."
+      }
+    ]
+  }
+}
