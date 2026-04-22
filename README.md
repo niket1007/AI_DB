@@ -149,9 +149,9 @@ Navigate to the API directory and start the Uvicorn server.
   fastapi dev .\main.py
   ```
   
-  *You should see: 
-  - `API running on http://127.0.0.1:8000`*
-  - `OpenAPI doc server running on http://127.0.0.1:8000/docs`*
+  You should see: 
+  - `API running on http://127.0.0.1:8000`
+  - `OpenAPI doc server running on http://127.0.0.1:8000/docs`
 
 2.
   ```bash
@@ -162,9 +162,9 @@ Navigate to the API directory and start the Uvicorn server.
   fastapi dev .\main.py --port 8001
   ```
   
-  *You should see: 
-  - `API running on http://127.0.0.1:8001`*
-  - `OpenAPI doc server running on http://127.0.0.1:8001/docs`*
+  You should see: 
+  - `API running on http://127.0.0.1:8001`
+  - `OpenAPI doc server running on http://127.0.0.1:8001/docs`
 
 
 ### Terminal 2: Frontend UI
