@@ -1,43 +1,43 @@
 # AI-DB: An Intelligent, Self-Optimising SQL Database with a Natural Language Interface
 
-**AI-DB** is a dual-module application designed to simplify database schema creation and interaction. It features a **Schema Creator** that converts JSON definitions into actual SQL tables with strict validation, and a planned **Natural Language Interface** (Module 2) to chat with your data.
+**AI-DB** is a comprehensive, multi-module database management platform designed to democratize data access and automate performance tuning. It bridges the gap between complex SQL operations and non-technical users by utilizing locally hosted Small Language Models (SLMs) to handle everything from database provisioning to natural language querying and autonomous performance optimization.
 
 ## 📋 Table of Contents
+- [Features](#-features)
+- [Project Structure](#-project-structure)
+- [Implementation Details](#-implementation-details)
+- [Prerequisites](#-prerequisites)
+- [Installation & Setup](#-installation--setup)
+- [Execution Steps](#-execution-steps)
+- [Usage Guide](#-usage-guide)
 
-  - [Features](https://www.google.com/search?q=%23-features)
-  - [Project Structure](https://www.google.com/search?q=%23-project-structure)
-  - [Implementation Details](https://www.google.com/search?q=%23-implementation-details)
-  - [Prerequisites](https://www.google.com/search?q=%23-prerequisites)
-  - [Installation & Setup](https://www.google.com/search?q=%23-installation--setup)
-  - [Execution Steps](https://www.google.com/search?q=%23-execution-steps)
-  - [Usage Guide](https://www.google.com/search?q=%23-usage-guide)
-
------
+---
 
 ## 🚀 Features
 
-### 1\. Schema Parser & Creator (Module 1)
+The system is divided into four integrated modules:
 
-  - **JSON-to-SQL Engine:** Define your database schema (tables, columns, relationships, indexes) using a simple JSON format.
-  - **Strict Validation:** The backend validates the JSON structure before creation, checking for:
-      - Duplicate table/column/index names.
-      - Valid data types (INTEGER, VARCHAR, BOOLEAN, etc.).
-      - Primary Key and Foreign Key integrity.
-      - Logic rules (e.g., `autoincrement` only on Integers, `SET NULL` requires nullable columns).
-  - **Universal Connectivity:** Uses **SQLAlchemy** under the hood, supporting SQLite, PostgreSQL, MySQL, and MSSQL.
-  - **Visual Feedback:** Real-time logs in the UI showing the validation and creation process.
+### 1. Schema Parser & Creator (Module 1 - Provisioning)
+- **JSON-to-SQL Engine:** Define your database schema (tables, columns, relationships, indexes) using a simple, intuitive JSON format.
+- **Strict Validation:** The backend rigorously validates the JSON structure before physical creation, checking for duplicate names, valid data types, and ensuring Primary/Foreign Key integrity.
+- **Universal Connectivity:** Powered by **SQLAlchemy**, supporting SQLite, PostgreSQL, MySQL, and MSSQL.
 
-### 2\. Chat with DB (Module 2 - *Work in Progress*)
+### 2. Natural Language Interface (Module 2 - Interaction)
+- **Text-to-SQL Chat:** Query your database using plain English. 
+- **Decomposed Prompting:** Integrates with local Small Language Models (e.g., Qwen 2.5 Coder, Llama 3.1) to translate complex relational logic into executable SQL.
+- **Complexity Classification:** Automatically gauges query complexity to assign appropriate processing resources.
 
-  - **Natural Language Interface:** A UI placeholder for a Text-to-SQL engine allowing users to query their database using plain English.
-  - **Connection Management:** Saves connection strings from Module 1 for quick access.
+### 3. The AI DBA (Module 3 - Optimization)
+- **Autonomic Diagnosis:** An automated background agent that monitors slow queries.
+- **Execution Plan Grounding:** Interprets physical database execution plans (e.g., PostgreSQL `EXPLAIN`) to detect structural bottlenecks like massive Sequential Scans or inefficient Hash Joins.
+- **Structural Correctives:** Autonomously generates formatted `CREATE INDEX` SQL commands to optimize database performance.
 
-### 3\. User Interface
+### 4. Unified Dashboard & Execution (Module 4 - Integration)
+- **Streamlit Frontend:** A cohesive, responsive web interface for all database operations.
+- **Direct SQL Execution:** A dedicated playground to execute raw SQL queries and visualize results.
+- **Schema Visualization:** Tools to view and map out the generated database schemas.
 
-  - **Streamlit Frontend:** A clean, responsive web interface.
-  - **Authentication:** Built-in Login and Registration system (Session-based).
-
------
+---
 
 ## 📂 Project Structure
 
@@ -45,45 +45,56 @@
 AI_DB/
 ├── .gitignore
 ├── README.md
-├── requirements.txt           # Python dependencies
+├── requirements.txt                   # Python dependencies
 ├── BACKEND/
-│   └── SCHEMA_PARSER_CREATOR_API/
-│       ├── main.py            # Entry point for FastAPI backend
-│       ├── Exceptions/        # Custom exception handling
-│       ├── models/            # Pydantic models for JSON validation
-│       ├── routers/           # API endpoints
-│       └── services/          # Core logic (Validation & SQLAlchemy generation)
+│   ├── SCHEMA_PARSER_CREATOR_API/     # Module 1 Backend
+│   │   ├── main.py                    # Entry point for Schema API
+│   │   ├── models/                    # Pydantic models for JSON validation
+│   │   ├── routers/                   # API endpoints
+│   │   └── services/                  # Validation & SQLAlchemy generation
+│   └── SQL_OPERATIONS_API/            # Modules 2, 3, and 4 Backend
+│       ├── main.py                    # Entry point for SQL Operations API
+│       ├── models/                    # Models for Chat, Optimize, and Execute payloads
+│       ├── routers/                   # API endpoints for SLM and DB interactions
+│       └── services/                  
+│           ├── complexity_classifier.py
+│           ├── optimization_service.py # AI DBA Logic
+│           ├── query_executors.py      # Raw SQL execution
+│           └── slm_service.py          # LLM orchestration and prompt building
+├── TESTERS/                           # Automated Benchmarking Suites
+│   ├── Module_2/                      # Text-to-SQL Evaluators (Spider, WikiSQL)
+│   └── Module_3/                      # DBA Performance Stress Tests (Single/Multi-table)
 └── UI/
-    ├── .env                   # Environment variables (API URL)
-    ├── main.py                # Entry point for Streamlit Frontend
-    ├── static/                # Helper data (JSON examples, connection guides)
-    └── ui_pages/              # Individual UI pages (Login, Creator, Chat)
+    ├── .env                           # Environment variables
+    ├── main.py                        # Entry point for Streamlit Frontend
+    ├── db/                            # UI-side SQLite storage (users, saved connections)
+    ├── static/                        # Examples and Helper Data
+    └── ui_pages/                      # UI Views
+        ├── chat.py                    # Natural language query interface
+        ├── json_guide.py              # Documentation for Schema Builder
+        ├── login.py / register.py     # User Authentication
+        ├── optimize_db.py             # AI DBA Dashboard
+        ├── query_executor.py          # Raw SQL execution environment
+        ├── schema_creator.py          # Module 1 UI
+        └── schema_graph.py            # ER Diagram visualizations
 ```
-
------
+---
 
 ## 🛠 Implementation Details
 
-### Backend (FastAPI)
+### Backend Infrastructure (FastAPI)
 
-The backend is built using **FastAPI** and follows a layered architecture:
+The backend utilizes two distinct **FastAPI** microservices:
 
-1.  **Router (`routers/routers.py`):** Exposes the `/create-schema` endpoint. Accepts a JSON payload containing the DB connection string and the Schema JSON.
-2.  **Validator (`services/schema_validator.py`):**
-      - Converts raw JSON into Pydantic models (`models/json_model.py`).
-      - Runs complex logical checks (e.g., ensuring a Foreign Key points to a valid Primary Key).
-      - Returns detailed error messages if the schema is invalid.
-3.  **Parser & Creator (`services/schema_parser.py`):**
-      - Dynamically constructs **SQLAlchemy** `Table`, `Column`, and `Index` objects based on the validated models.
-      - Uses `Asyncio` to handle the request asynchronously.
-      - Executes the DDL (Data Definition Language) statements against the target database using a transaction.
+1.  **Schema Creator API:** Focuses entirely on Data Definition Language (DDL). It translates JSON into physical database objects asynchronously.
+2.  **SQL Operations API:** Acts as the cognitive engine. It orchestrates connections to local language models (via Ollama) to translate text to SQL, parse Abstract Syntax Trees (AST) using sqlglot, read physical execution plans, and run Data Manipulation Language (DML) queries.
 
 ### Frontend (Streamlit)
 
 The frontend utilizes **Streamlit** for rapid UI development:
 
-1.  **State Management:** Uses `st.session_state` to handle user login sessions, page navigation (`login` -\> `creator` -\> `chat`), and storing active database connections.
-2.  **API Integration:** Uses the `requests` library to send the JSON schema to the FastAPI backend and stream the response logs back to the user.
+1.  **State Management:** Uses st.session_state to handle login sessions and persistent database connections across different pages.
+2.  **Dynamic Interfaces:** Seamlessly switches between the Schema Creator, SQL Playground, and Chat interfaces using Streamlit's multi-page capabilities.
 
 -----
 
@@ -91,6 +102,7 @@ The frontend utilizes **Streamlit** for rapid UI development:
 
   * **Python 3.10+** (Project developed on 3.12)
   * **Pip** (Python Package Manager)
+  * **Ollama** (Required locally to run the Small Language Models for Text-to-SQL and Optimization features)
 
 -----
 
@@ -128,18 +140,32 @@ This project requires running **two** separate terminals: one for the Backend AP
 ### Terminal 1: Backend API
 
 Navigate to the API directory and start the Uvicorn server.
+1.
+  ```bash
+  # From the root AI_DB folder
+  cd BACKEND/SCHEMA_PARSER_CREATOR_API
+  
+  # Run the server
+  fastapi dev .\main.py
+  ```
+  
+  *You should see: 
+  - `API running on http://127.0.0.1:8000`*
+  - `OpenAPI doc server running on http://127.0.0.1:8000/docs`*
 
-```bash
-# From the root AI_DB folder
-cd BACKEND/SCHEMA_PARSER_CREATOR_API
+2.
+  ```bash
+  # From the root AI_DB folder
+  cd BACKEND/SQL_OPERATIONS_API
+  
+  # Run the server
+  fastapi dev .\main.py --port 8001
+  ```
+  
+  *You should see: 
+  - `API running on http://127.0.0.1:8001`*
+  - `OpenAPI doc server running on http://127.0.0.1:8001/docs`*
 
-# Run the server
-fastapi dev .\main.py
-```
-
-*You should see: 
-- `Backend Server running on http://127.0.0.1:8000`*
-- `OpenAPI doc server running on http://127.0.0.1:8000/docs`*
 
 ### Terminal 2: Frontend UI
 
@@ -162,10 +188,10 @@ streamlit run main.py
 1.  **Login/Register:**
 
       - Open the UI.
-      - Click **Register** to create a dummy account (e.g., Username: `user`, Password: `pass`).
+      - Click **Register** to create a account (e.g., Username: `user`, Password: `pass`).
       - **Login** with those credentials.
 
-2.  **Create a Database Schema:**
+2.  **Provision a Database (Module 1)**
 
       - Navigate to **Schema Creator** from the sidebar.
       - **Connection String:** Enter a valid SQLAlchemy connection string.
@@ -173,17 +199,16 @@ streamlit run main.py
       - **JSON Schema:** Paste your schema JSON. You can use the default example provided in the text area.
       - Click **Validate and Create Schema**.
       - Watch the "Creation Log" for success or validation errors.
+      - Save the successful connection to your profile.
 
-3.  **Save Connection:**
+3.  **Interact with Data (Module 2 & 4):**
 
-      - Upon success, a "Save Connection" form appears. Give it a name (e.g., "My Test DB") and save it.
+      - Navigate to the **Query Executor** to insert raw data into your newly created tables.
+      - Navigate to **Chat with DB**, select your saved connection, and ask plain English questions about your data.
 
-4.  **Chat (Mockup):**
+4.  **Optimize Performance (Module 3):**
 
-      - Navigate to **Chat with DB**.
-      - Select your saved connection.
-      - *Note: The actual Text-to-SQL functionality is currently a placeholder.*
-
+      - Navigate to **Optimize DB** to allow the AI DBA to profile your query logs and suggest missing indexes
 -----
 
 ### Example JSON Schema
@@ -193,67 +218,78 @@ streamlit run main.py
   "tables": [
     {
       "name": "users",
+      "description": "Users table",
       "columns": [
         {
           "name": "id",
           "type": "INTEGER",
           "primary_key": true,
           "autoincrement": true,
-          "nullable": false
+          "nullable": false,
+          "description": "users autogenerated db id"
         },
         {
           "name": "username",
           "type": "VARCHAR",
           "size": 50,
           "unique": true,
-          "nullable": false
+          "nullable": false,
+          "description": "users username"
         },
         {
           "name": "email",
           "type": "VARCHAR",
           "size": 100,
           "unique": true,
-          "nullable": true
+          "nullable": true,
+          "description": "users email"
         },
         {
           "name": "created_at",
           "type": "DATETIME",
           "nullable": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "CURRENT_TIMESTAMP",
+          "description": "time at which record was created"
         },
         {
           "name": "is_active",
           "type": "BOOLEAN",
           "nullable": false,
-          "default": "true"
+          "default": "true",
+          "description": "is user active?"
         }
       ]
     },
     {
-      "name": "posts",
+      "name": "posts",,
+      "description": "posts table"
       "columns": [
         {
           "name": "id",
           "type": "INTEGER",
           "primary_key": true,
           "autoincrement": true,
-          "nullable": false
+          "nullable": false,
+          "description": "posts autogenerated db id"
         },
         {
           "name": "title",
           "type": "VARCHAR",
           "size": 200,
-          "nullable": false
+          "nullable": false,
+          "description": "posts title"
         },
         {
           "name": "content",
           "type": "VARCHAR",
-          "size": 10000
+          "size": 10000,
+          "description": "posts content"
         },
         {
           "name": "author_id",
           "type": "INTEGER",
-          "nullable": true
+          "nullable": true,
+          "description": "user id who has posted this post"
         }
       ]
     }
